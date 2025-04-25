@@ -1,70 +1,96 @@
-# Getting Started with Create React App
+Vesting DApp - Documentation
+Introduction
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Bienvenue dans la DApp de vesting ! Ce projet permet de gérer des tokens vesting (tokens verrouillés) pour des bénéficiaires spécifiques, avec un délai de déblocage automatique. L’interface front-end est développée avec React et interagit avec un contrat intelligent Solidity via Metamask et Ethers.js.
+Prérequis
 
-## Available Scripts
+Avant de commencer, voici ce qu’il te faut :
 
-In the project directory, you can run:
+    Metamask installé dans ton navigateur
 
-### `npm start`
+    Un compte Metamask avec de l'ETH sur Sepolia Testnet
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+    Un token ERC-20 déployé (pour les tests, utilise n'importe quel token ERC-20 sur Sepolia)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+    Node.js et npm installés sur ton environnement de développement
 
-### `npm test`
+Installation
+1. Cloner le repository
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Cloner le repository du projet sur ta machine locale.
 
-### `npm run build`
+git clone https://github.com/ton_repo/vesting-dapp.git
+cd vesting-dapp
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. Installer les dépendances
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Dans le dossier racine du projet, lance cette commande pour installer les dépendances :
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+npm install
 
-### `npm run eject`
+Configurer le Contrat
+1. Déployer le Contrat (Backend)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Le contrat Vesting.sol est écrit en Solidity. Tu peux le déployer facilement avec Hardhat.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    Configurer Infura (Sepolia Testnet) dans .env
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    Déployer le contrat avec la commande :
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+npx hardhat run scripts/deploy.js --network sepolia
 
-## Learn More
+Cela déploie ton contrat et t'affiche l'adresse du contrat sur Sepolia.
+2. Connecter le Contrat au Front
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Dans le fichier src/abi.js :
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    Met l’adresse du contrat déployé dans VESTING_ADDRESS
 
-### Code Splitting
+    Assure-toi que l’ABI (interface du contrat) est bien définie.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Front-end (React)
+1. Connexion avec Metamask
 
-### Analyzing the Bundle Size
+Dans le front-end, le bouton "Connecter Metamask" permet à l'utilisateur de connecter son compte Metamask à la DApp.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Une fois connecté, l'adresse du wallet apparaît, et l'utilisateur peut interagir avec le contrat.
+2. Ajouter un Vesting
 
-### Making a Progressive Web App
+L'interface permet d'ajouter un vested token pour un bénéficiaire en fournissant :
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+    Adresse du bénéficiaire
 
-### Advanced Configuration
+    Montant des tokens
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+    Temps de déblocage (5 minutes par défaut)
 
-### Deployment
+L’utilisateur peut ensuite cliquer sur "Ajouter Vesting" pour créer un nouveau vesting sur le contrat.
+3. Réclamer les Tokens (Claim)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Lorsque le unlockTime est atteint, l'utilisateur peut réclamer ses tokens en cliquant sur "Claim Tokens".
+Scripts utiles
+Déployer un nouveau contrat
 
-### `npm run build` fails to minify
+    Déploie le contrat sur Sepolia en utilisant deploy.js.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+npx hardhat run scripts/deploy.js --network sepolia
+
+Ajouter un vesting manuellement
+
+    Utilise addVesting() dans le contrat pour ajouter un vesting avec l'adresse, le montant, et le unlockTime :
+
+npx hardhat run scripts/addVesting.js --network sepolia
+
+Configurer l'Environnement
+1. Variables d'environnement (.env)
+
+Crée un fichier .env à la racine du projet avec les variables suivantes :
+
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/votre_project_id
+PRIVATE_KEY=votre_cle_privée
+
+Conclusion
+
+Cette DApp de vesting permet de gérer et de distribuer des tokens de manière sécurisée avec un délai de déblocage. L'interface front-end en React, connectée à Metamask, rend l’utilisation de la plateforme intuitive et facile pour l'utilisateur.
+
+Si tu as des questions, n’hésite pas à me contacter !
