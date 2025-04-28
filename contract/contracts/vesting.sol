@@ -8,15 +8,16 @@ contract Vesting {
         uint256 amount;
         uint256 unlockTime;
         bool claimed;
+        IERC20 token;
     }
 
     address public immutable _owner;
-    IERC20 public immutable token;
     mapping(address => VestingInfo) public vestings;
+    mapping(address => bool) public whitelist;
 
-    constructor(address tokenAddress) {
+    constructor() {
         _owner = msg.sender;
-        token = IERC20(tokenAddress);
+        whitelist[msg.sender] = true; // Owner ajouté par défaut
     }
 
     modifier onlyOwner() {
@@ -24,7 +25,22 @@ contract Vesting {
         _;
     }
 
-    function addVesting(address beneficiary, uint256 amount, uint256 unlockTime) external onlyOwner {
+    modifier onlyWhitelisted() {
+        require(whitelist[msg.sender], "Not whitelisted");
+        _;
+    }
+
+    function addAdmin(address admin) external onlyOwner {
+        require(admin != address(0), "Invalid address");
+        whitelist[admin] = true;
+    }
+
+    function removeAdmin(address admin) external onlyOwner {
+        require(admin != address(0), "Invalid address");
+        whitelist[admin] = false;
+    }
+
+    function addVesting(address beneficiary, uint256 amount, uint256 unlockTime, address tokenAddress) external onlyWhitelisted {
         require(beneficiary != address(0), "Invalid beneficiary");
         require(amount > 0, "Amount must be > 0");
         require(unlockTime > block.timestamp, "Unlock time must be in the future");
@@ -32,7 +48,8 @@ contract Vesting {
         vestings[beneficiary] = VestingInfo({
             amount: amount,
             unlockTime: unlockTime,
-            claimed: false
+            claimed: false,
+            token: IERC20(tokenAddress)
         });
     }
 
@@ -44,6 +61,6 @@ contract Vesting {
         require(block.timestamp >= userVesting.unlockTime, "Tokens are still locked");
 
         userVesting.claimed = true;
-        require(token.transfer(msg.sender, userVesting.amount), "Transfer failed");
+        require(userVesting.token.transfer(msg.sender, userVesting.amount), "Transfer failed");
     }
 }
