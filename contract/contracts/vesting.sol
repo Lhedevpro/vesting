@@ -44,6 +44,8 @@ contract Vesting {
         require(beneficiary != address(0), "Invalid beneficiary");
         require(amount > 0, "Amount must be > 0");
         require(unlockTime > block.timestamp, "Unlock time must be in the future");
+        require(vestings[beneficiary].amount == 0 || vestings[beneficiary].claimed, "Vesting already active");
+
 
         vestings[beneficiary] = VestingInfo({
             amount: amount,
